@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 using namespace std;
 #define port 7
-#define address "172.16.40.1"
+#define address "82.179.90.12"
 int main (int argc, char **argv)
 {
     //Cтруктура с адресом программы-клиента
