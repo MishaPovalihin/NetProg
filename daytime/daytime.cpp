@@ -22,12 +22,11 @@ int main()
     sockaddr_in * remoteAddr = new (sockaddr_in);// структура с адресом сервера
     remoteAddr->sin_family = AF_INET;     // интернет протокол IPv4
     remoteAddr->sin_port = htons(13);  // порт 13
-    remoteAddr->sin_addr.s_addr = inet_addr("127.0.0.1"); //  адрес 
+    remoteAddr->sin_addr.s_addr = inet_addr("82.179.90.12"); //  адрес 
     char *bufer = new char[1024]; // буфер для передачи и приема данных
-    strcpy(bufer,"Hello, Penza");   //копируем строку
     int msgLen = strlen(bufer);     //вычисляем длину строки
     // создаём сокет
-    int mySocket = socket(AF_INET, SOCK_STREAM, 0); //tcp протокол
+    int mySocket = socket(AF_INET, SOCK_DGRAM, 0); 
     if (mySocket == -1) {
         close(mySocket);
         Exception("Error open socket",1);
@@ -51,7 +50,6 @@ int main()
         close(mySocket);
         Exception("Error send message", 4);
     }
-    cout << "We send: " << bufer << endl; 
     // принимаем ответ в буффер
     rc = recv(mySocket, bufer, 1024, 0);
     if (rc == -1) {
@@ -59,7 +57,7 @@ int main()
        Exception("Error receive answer.", 5);
     }
     bufer[rc] = '\0'; // конец принятой строки
-    cout << "We receive: " << buffer << endl; // вывод полученного сообщения от сервера
+    cout << "Daytime from server: " << buffer << endl; 
     // закрыем сокет
     close(mySocket);
     delete selfAddr;
