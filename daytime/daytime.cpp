@@ -57,7 +57,7 @@ int main()
        Exception("Error receive answer.", 5);
     }
     bufer[rc] = '\0'; // конец принятой строки
-    cout << "Daytime from server: " << buffer << endl; 
+    cout << "Daytime from server: " << bufer << endl; 
     // закрыем сокет
     close(mySocket);
     delete selfAddr;
