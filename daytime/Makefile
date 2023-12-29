@@ -1,22 +1,9 @@
-.PHONY: all debug release clean
+CXX = g++
+CXXFLAGS = -std=c++11
 
-RELEASE_FLAGS = -O2 -Wall -DNDEBUG
-DEBUG_FLAGS   = -g -O0 -Wall
-RELEASE_EXEC  = daytime
-DEBUG_EXEC    = daytime-dbg
-SOURCE        = daytime.cpp
+udp_daytime_client: main.cpp
+	$(CXX) $(CXXFLAGS) -o udp_daytime_client main.cpp
 
-all: debug release
-
-debug: $(DEBUG_EXEC)
-
-$(DEBUG_EXEC): $(SOURCE)
-	g++ $(DEBUG_FLAGS) $(SOURCE) -o $(DEBUG_EXEC) 
-
-release: $(RELEASE_EXEC)
-
-$(RELEASE_EXEC): $(SOURCE)
-	g++ $(RELEASE_FLAGS) $(SOURCE) -o $(RELEASE_EXEC)
-
+.PHONY: clean
 clean:
-	rm -f $(RELEASE_EXEC) $(DEBUG_EXEC)
+	rm -f udp_daytime_client
