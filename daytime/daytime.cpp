@@ -1,67 +1,49 @@
 #include <iostream>
-#include <string>
-#include <cstdlib> 
-#include <cstring> 
-#include <unistd.h>
-#include <netinet/in.h> 
+#include <cstring>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
-#define port 13
-#define address "172.16.40.1"
-using namespace std;
-void Exception(const string & why, const int exitCode ) // Исключения (возможные ошибки завершение программы) 
-{
-    cout << "Error:"<<exitCode <<endl<< why << endl;
-    exit(exitCode);
-}
+#include <unistd.h>
+
 int main()
-{ 
-    sockaddr_in * selfAddr = new (sockaddr_in); // структура с адресом программы клиента
-    selfAddr->sin_family = AF_INET; // интернет протокол IPv4
-    selfAddr->sin_port = 0;         // любой порт на усмотрение ОС
-    selfAddr->sin_addr.s_addr = 0;  
-    sockaddr_in * remoteAddr = new (sockaddr_in);// структура с адресом сервера
-    remoteAddr->sin_family = AF_INET;     // интернет протокол IPv4
-    remoteAddr->sin_port = htons(13);  // порт 13
-    remoteAddr->sin_addr.s_addr = inet_addr("82.179.90.12"); //  адрес 
-    char *bufer = new char[1024]; // буфер для передачи и приема данных
-    int msgLen = strlen(bufer);     //вычисляем длину строки
-    // создаём сокет
-    int mySocket = socket(AF_INET, SOCK_DGRAM, 0); 
-    if (mySocket == -1) {
-        close(mySocket);
-        Exception("Error open socket",1);
-    }
-    //связываем сокет с адрессом
-    int rc = bind(mySocket,(const sockaddr *) selfAddr, sizeof(sockaddr_in));
-    if (rc == -1) {
-        close(mySocket);
-        Exception("Error bind socket with local address",2);
-        }
-    //установливаем соединение
-    rc = connect(mySocket, (const sockaddr*) remoteAddr, sizeof(sockaddr_in));
-    if (rc == -1) {
-        close(mySocket);
-        Exception("Error connect socket with remote server.", 3);
+{
+    int sockfd;
+    struct sockaddr_in server_addr;
+    socklen_t addr_len = sizeof(server_addr);
+    char buffer[4096];
+
+    
+    if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+        std::cerr << "Socket creation error\n";
+        return 1;
     }
 
-    // передаём сообщение из буффера
-    rc = send(mySocket, bufer, msgLen, 0);
-    if (rc == -1) {
-        close(mySocket);
-        Exception("Error send message", 4);
+    
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(13); 
+    server_addr.sin_addr.s_addr = inet_addr("172.16.40.1"); 
+
+    
+    if (sendto(sockfd, "GET TIME", strlen("GET TIME"), 0, (struct sockaddr *)&server_addr, addr_len) < 0) {
+        std::cerr << "Sendto failed\n";
+        return 1;
     }
-    // принимаем ответ в буффер
-    rc = recv(mySocket, bufer, 1024, 0);
-    if (rc == -1) {
-        close(mySocket);
-       Exception("Error receive answer.", 5);
+
+    
+    int bytes_received = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&server_addr, &addr_len);
+    if (bytes_received < 0) {
+        std::cerr << "Recvfrom failed\n";
+        return 1;
     }
-    bufer[rc] = '\0'; // конец принятой строки
-    cout << "Daytime from server: " << bufer << endl; 
-    // закрыем сокет
-    close(mySocket);
-    delete selfAddr;
-    delete remoteAddr;
-    delete[] bufer;
+
+    buffer[bytes_received] = '\0'; 
+
+    
+    std::cout << "Daytime from server: " << buffer << std::endl;
+
+    
+    close(sockfd);
+
     return 0;
 }
